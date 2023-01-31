@@ -3,14 +3,39 @@ from __future__ import unicode_literals
 from time import sleep, time, strftime
 import requests
 import io
-import smtplib
+#import smtplib
 import sys
-from smtp_config import sender, password, receivers, host, port
+#from smtp_config import sender, password, receivers, host, port
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
-#import pandas as pd
+import sqlite3
+
+con = sqlite3.connect("monitoring.db")
+cur = con.cursor()
 
 
-DELAY = 60  # Delay between site queries
+sql_create_table = """ CREATE TABLE Services_Events(
+                            moneve_URL TEXT NOT NULL,
+                            moneve_DateTime TEXT NOT NULL,
+                            moneve_StatusCode NUMERIC NOT NULL,
+                            moneve_Latency TEXT NOT NULL,
+                            PRIMARY KEY(moneve_URL)
+                        ); """
+#cur.execute(sql_create_table)
+
+sql_create_table = """  CREATE TABLE Services(
+                            mon_URL TEXT NOT NULL,
+                            mon_MAC TEXT,
+                            mon_LastStatus NUMERIC NOT NULL,
+                            mon_LastLatency TEXT NOT NULL,
+                            mon_LastScan TEXT NOT NULL,
+                            mon_Tags TEXT,
+                            mon_AlertEvents INTEGER DEFAULT 0,
+                            mon_AlertDown INTEGER DEFAULT 0,
+                            PRIMARY KEY(mon_URL)
+                        ); """
+#cur.execute(sql_create_table)
+
+#DELAY = 60  # Delay between site queries
 EMAIL_INTERVAL = 1800  # Delay between alert emails
 
 last_email_time = {}  # Monitored sites and timestamp of last alert sent
@@ -114,8 +139,10 @@ def get_sites():
     return sites
 
 def main():
+    global cur
+    global con
     # Empty Log
-    open('monitor.log', 'w').close()
+    #open('monitor.log', 'w').close()
     sites = get_sites()
 
     for site in sites:
@@ -132,8 +159,25 @@ def main():
                                         colorize(status, "green"),latency
                                         )
                          )
+                    
+                    #sqlite_insert_with_param = """INSERT INTO Services
+                    #                  (mon_URL, mon_MAC, mon_LastStatus, mon_LastLatency, mon_LastScan, mon_Tags, mon_AlertEvents, mon_AlertDown) 
+                    #                  VALUES (?, ?, ?, ?, ?, ?, ?, ?);"""
+
+                    #data_tuple = (site, "s", status, latency, strftime("%Y-%m-%d %H:%M:%S"), "s", 1, 1)
+                    #cur.execute(sqlite_insert_with_param, data_tuple)
+                    #con.commit()
+
                     sys.stdout.flush()
                 else:
+                    # sqlite_insert_with_param = """INSERT INTO Services
+                    #                   (mon_URL, mon_MAC, mon_LastStatus, mon_LastLatency, mon_LastScan, mon_Tags, mon_AlertEvents, mon_AlertDown) 
+                    #                   VALUES (?, ?, ?, ?, ?, ?, ?, ?);"""
+
+                    # data_tuple = (site, "s", status, latency, strftime("%Y-%m-%d %H:%M:%S"), "s", 1, 1)
+                    # cur.execute(sqlite_insert_with_param, data_tuple)
+                    # con.commit()
+
                     error_log(site, status, latency)
                     #send_alert(site, status)
             #sleep(DELAY)
