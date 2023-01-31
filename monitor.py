@@ -30,7 +30,7 @@ You are being notified that {site} is experiencing a {status} status!
 def prepare_service_monitoring_env ():
     global con
     global cur
-    print()
+
     sql_create_table = """ CREATE TABLE IF NOT EXISTS Services_Events(
                                 moneve_URL TEXT NOT NULL,
                                 moneve_DateTime TEXT NOT NULL,
@@ -52,6 +52,20 @@ def prepare_service_monitoring_env ():
                                 PRIMARY KEY(mon_URL)
                             ); """
     cur.execute(sql_create_table)
+
+# Update Service with lastLatence, lastScan and lastStatus
+# -----------------------------------------------------------------------------
+# def set_service_update(_mon_URL, _mon_lastScan, _mon_lastStatus, _mon_lastLatence,):
+#     global con
+#     global cur
+
+
+# Insert Services_Events with moneve_URL, moneve_DateTime, moneve_StatusCode and moneve_Latency
+# -----------------------------------------------------------------------------
+# def set_services_events(_moneve_URL, _moneve_DateTime, _moneve_StatusCode, _moneve_Latency):
+#     global con
+#     global cur
+
 
 # -----------------------------------------------------------------------------
 def colorize(text, color):
@@ -149,20 +163,20 @@ def service_monitoring():
     while sites:
         for site in sites:
             status,latency = check_services_health(site)
+            scantime = strftime("%Y-%m-%d %H:%M:%S")
 
             # Debugging 
-            print("({}) {} STATUS: {} ... {}".format(strftime("%Y-%m-%d %H:%M:%S"),
+            print("({}) {} STATUS: {} ... {}".scantime,
                                 site,
                                 status,
                                 latency
-                                )
                  )
             # Write Logfile
             service_monitoring_log(site, status, latency)
             # Update Service with lastLatence, lastScan and lastStatus
-            # set_service_update()
+            # set_service_update(site, scantime, status, latency)
             # Insert Services_Events with moneve_URL, moneve_DateTime, moneve_StatusCode and moneve_Latency
-            # set_services_events()
+            # set_services_events(site, scantime, status, latency)
 
             # sqlite_insert_with_param = """INSERT INTO Services
             #                  (mon_URL, mon_MAC, mon_LastStatus, mon_LastLatency, mon_LastScan, mon_Tags, mon_AlertEvents, mon_AlertDown) 
