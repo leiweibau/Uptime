@@ -120,22 +120,16 @@ def ping(site):
 
 
 def get_sites():
-    """Return list of unique URLs from input and sites.txt file."""
-    sites = sys.argv[1:]  # Accept sites from command line input
+    global cur
+    global con
 
-    # Read in additional sites to monitor from sites.txt file
-    try:
-        sites += [site.strip() for site in io.open('sites.txt', mode='r').readlines()]
-    except IOError:
-        print(colorize("No sites.txt file found", "red"))
+    cur.execute("SELECT mon_URL FROM Services")
+    rows = cur.fetchall()
 
-    # Add protocol if missing in URL
-    for site in range(len(sites)):
-        if sites[site][:7] != "http://" and sites[site][:8] != "https://":
-            sites[site] = "http://" + sites[site]
+    sites = []
+    for row in rows:
+        sites.append(row[0])
 
-    # Eliminate exact duplicates in sites
-    sites = list(set(sites))
     return sites
 
 def main():
