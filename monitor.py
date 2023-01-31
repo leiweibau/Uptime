@@ -39,7 +39,7 @@ def colorize(text, color):
 def error_log(site, status, latency):
     """Log errors to stdout and log file, and send alert email via SMTP."""
     # Print colored status message to terminal
-    print("({}) {} STATUS: {}... {}".format(strftime("%a %b %d %Y %H:%M:%S"),
+    print("({}) {} STATUS: {}... {}".format(strftime("%Y-%m-%d %H:%M:%S"),
                                         site,
                                         colorize(status, "yellow"),
                                         latency
@@ -47,7 +47,7 @@ def error_log(site, status, latency):
          )
     # Log status message to log file
     with open('monitor.log', 'a') as log:
-        log.write("({}) {} STATUS: {}... {}\n".format(strftime("%a %b %d %Y %H:%M:%S"),
+        log.write("({}) {} STATUS: {}... {}\n".format(strftime("%Y-%m-%d %H:%M:%S"),
                                                 site,
                                                 status,
                                                 latency,
@@ -122,7 +122,7 @@ def main():
             for site in sites:
                 status,latency = ping(site)
                 if status == 200:
-                    print("({}) {} STATUS: {} ... {}".format(strftime("%a %b %d %Y %H:%M:%S"),
+                    print("({}) {} STATUS: {} ... {}".format(strftime("%Y-%m-%d %H:%M:%S"),
                                         site,
                                         colorize(status, "green"),latency
                                         )
