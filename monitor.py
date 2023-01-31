@@ -19,15 +19,6 @@ EMAIL_INTERVAL = 1800  # Delay between alert emails
 
 last_email_time = {}  # Monitored sites and timestamp of last alert sent
 
-# Define escape sequences for colored terminal output
-COLOR_DICT = {
-    "green": "\033[92m",
-    "red": "\033[91m",
-    "yellow": "\033[93m",
-    "bold": "\033[1m",
-    "end": "\033[0m",
-    }
-
 # Message template for alert
 MESSAGE = """From: {sender}
 To: {receivers}
@@ -69,10 +60,9 @@ def colorize(text, color):
 
 # -----------------------------------------------------------------------------
 def service_monitoring_log(site, status, latency):
-    global log
+    global monitor_logfile
 
     # Log status message to log file
-    #with open('monitor.log', 'a') as log:
     monitor_logfile.write("{} | {} | {} | {}\n".format(strftime("%Y-%m-%d %H:%M:%S"),
                                                 site,
                                                 status,
@@ -97,9 +87,9 @@ def send_alert(site, status):
                                             )
                              )
             last_email_time[site] = time()  # Update time of last email
-            print(colorize("Successfully sent email", "green"))
+            print("Successfully sent email")
         except smtplib.SMTPException:
-            print(colorize("Error sending email ({}:{})".format(host, port), "red"))
+            print("Error sending email ({}:{})".format(host, port))
 
 # -----------------------------------------------------------------------------
 def check_services_health(site):
@@ -158,39 +148,22 @@ def service_monitoring():
     while sites:
         for site in sites:
             status,latency = check_services_health(site)
-            if status == 200:
-                print("({}) {} STATUS: {} ... {}".format(strftime("%Y-%m-%d %H:%M:%S"),
-                                    site,
-                                    colorize(status, "green"),
-                                    latency
-                                    )
-                     )
-                service_monitoring_log(site, status, latency)
-                # sqlite_insert_with_param = """INSERT INTO Services
-                #                  (mon_URL, mon_MAC, mon_LastStatus, mon_LastLatency, mon_LastScan, mon_Tags, mon_AlertEvents, mon_AlertDown) 
-                #                  VALUES (?, ?, ?, ?, ?, ?, ?, ?);"""
 
-                # data_tuple = (site, "s", status, latency, strftime("%Y-%m-%d %H:%M:%S"), "s", 1, 1)
-                # cur.execute(sqlite_insert_with_param, data_tuple)
-                # con.commit()
-                sys.stdout.flush()
-            else:
-                print("({}) {} STATUS: {}... {}".format(strftime("%Y-%m-%d %H:%M:%S"),
-                                    site,
-                                    colorize(status, "yellow"),
-                                    latency
-                                    )
-                     )
-                service_monitoring_log(site, status, latency)
-                # sqlite_insert_with_param = """INSERT INTO Services
-                #                   (mon_URL, mon_MAC, mon_LastStatus, mon_LastLatency, mon_LastScan, mon_Tags, mon_AlertEvents, mon_AlertDown) 
-                #                   VALUES (?, ?, ?, ?, ?, ?, ?, ?);"""
+            print("({}) {} STATUS: {} ... {}".format(strftime("%Y-%m-%d %H:%M:%S"),
+                                site,
+                                colorize(status, "green"),
+                                latency
+                                )
+                 )
+            service_monitoring_log(site, status, latency)
+            # sqlite_insert_with_param = """INSERT INTO Services
+            #                  (mon_URL, mon_MAC, mon_LastStatus, mon_LastLatency, mon_LastScan, mon_Tags, mon_AlertEvents, mon_AlertDown) 
+            #                  VALUES (?, ?, ?, ?, ?, ?, ?, ?);"""
 
-                # data_tuple = (site, "s", status, latency, strftime("%Y-%m-%d %H:%M:%S"), "s", 1, 1)
-                # cur.execute(sqlite_insert_with_param, data_tuple)
-                # con.commit()
-
-                #send_alert(site, status)
+            # data_tuple = (site, "s", status, latency, strftime("%Y-%m-%d %H:%M:%S"), "s", 1, 1)
+            # cur.execute(sqlite_insert_with_param, data_tuple)
+            # con.commit()
+            sys.stdout.flush()
 
         monitor_logfile.close()
         exit()
