@@ -6,6 +6,7 @@ import io
 import smtplib
 import sys
 from smtp_config import sender, password, receivers, host, port
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
 #import pandas as pd
 
 
@@ -77,13 +78,17 @@ def send_alert(site, status):
 
 
 def ping(site):
+    # Enable self signed SSL
+    requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
     """Send GET request to input site and return status code"""
     try:
-        resp = requests.get(site)
+        resp = requests.get(site, verify=False)
         latency = resp.elapsed
         latency_str = str(latency)
         latency_str_seconds = latency_str.split(":")
         return resp.status_code, latency_str_seconds[2].replace("00.", "0.")
+    except requests.exceptions.SSLError:
+        pass
     except:
         latency = "99999"
         return 503, latency
