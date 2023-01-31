@@ -8,6 +8,8 @@ import sys
 #from smtp_config import sender, password, receivers, host, port
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 import sqlite3
+import pwd
+import os
 
 con = sqlite3.connect("monitoring.db")
 cur = con.cursor()
@@ -100,7 +102,7 @@ def send_alert(site, status):
             print(colorize("Error sending email ({}:{})".format(host, port), "red"))
 
 # -----------------------------------------------------------------------------
-def ping(site):
+def check_services_health(site):
     # Enable self signed SSL
     requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
     """Send GET request to input site and return status code"""
@@ -116,8 +118,13 @@ def ping(site):
         latency = "99999"
         return 503, latency
 
+# ----------------------------------------------------------------------------- Duplicat
+def get_username():
+
+    return pwd.getpwuid(os.getuid())[0]
+
 # -----------------------------------------------------------------------------
-def get_sites():
+def get_services_list():
     global cur
     global con
 
@@ -137,18 +144,20 @@ def service_monitoring():
     
     # Empty Log and write new header
     with open('monitor.log', 'w') as monitor_logfile:
-        monitor_logfile.write("Monitoring:\n---------------------------------------------------------\n\n")
+        monitor_logfile.write("Pi.Alert [Prototype]:\n---------------------------------------------------------\n")
+        monitor_logfile.write("Current User: %s \n\n" % get_username())
+        monitor_logfile.write("Monitor Web-Services\n")
         monitor_logfile.write("Timestamp: " + strftime("%Y-%m-%d %H:%M:%S") + "\n\n")
         monitor_logfile.write("| Timestamp | URL | StatusCode | ResponseTime |\n-----------------------------------------------")
 
-    sites = get_sites()
+    sites = get_services_list()
 
     for site in sites:
         last_email_time[site] = 0  # Initialize timestamp as 0
 
     while sites:
         for site in sites:
-            status,latency = ping(site)
+            status,latency = check_services_health(site)
             if status == 200:
                 print("({}) {} STATUS: {} ... {}".format(strftime("%Y-%m-%d %H:%M:%S"),
                                     site,
