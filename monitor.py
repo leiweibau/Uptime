@@ -47,9 +47,10 @@ def error_log(site, status, latency):
          )
     # Log status message to log file
     with open('monitor.log', 'a') as log:
-        log.write("({}) {} STATUS: {}\n".format(strftime("%a %b %d %Y %H:%M:%S"),
+        log.write("({}) {} STATUS: {}... {}\n".format(strftime("%a %b %d %Y %H:%M:%S"),
                                                 site,
                                                 status,
+                                                latency,
                                                 )
                   )
 
@@ -108,6 +109,8 @@ def get_sites():
     return sites
 
 def main():
+    # Empty Log
+    open('monitor.log', 'w').close()
     sites = get_sites()
 
     for site in sites:
