@@ -6,6 +6,7 @@ import io
 import smtplib
 import sys
 from smtp_config import sender, password, receivers, host, port
+#import pandas as pd
 
 
 DELAY = 60  # Delay between site queries
@@ -30,19 +31,20 @@ Subject: Monitor Service Notification
 You are being notified that {site} is experiencing a {status} status!
 """
 
-
 def colorize(text, color):
     """Return input text wrapped in ANSI color codes for input color."""
     return COLOR_DICT[color] + str(text) + COLOR_DICT['end']
 
 
-def error_log(site, status):
+def error_log(site, status, latency):
     """Log errors to stdout and log file, and send alert email via SMTP."""
     # Print colored status message to terminal
-    print("\n({}) {} STATUS: {}".format(strftime("%a %b %d %Y %H:%M:%S"),
+    print("({}) {} STATUS: {}... {}".format(strftime("%a %b %d %Y %H:%M:%S"),
                                         site,
                                         colorize(status, "yellow"),
-                                        ))
+                                        latency
+                                        )
+         )
     # Log status message to log file
     with open('monitor.log', 'a') as log:
         log.write("({}) {} STATUS: {}\n".format(strftime("%a %b %d %Y %H:%M:%S"),
@@ -77,9 +79,13 @@ def ping(site):
     """Send GET request to input site and return status code"""
     try:
         resp = requests.get(site)
-        return resp.status_code
+        latency = resp.elapsed
+        latency_str = str(latency)
+        latency_str_seconds = latency_str.split(":")
+        return resp.status_code, latency_str_seconds[2].replace("00.", "0.")
     except:
-        return 503
+        latency = "99999"
+        return 503, latency
 
 
 def get_sites():
@@ -99,28 +105,31 @@ def get_sites():
 
     # Eliminate exact duplicates in sites
     sites = list(set(sites))
-
     return sites
-
 
 def main():
     sites = get_sites()
 
     for site in sites:
-        print(colorize("Beginning monitoring of {}".format(site), "bold"))
+        #print(colorize("Beginning monitoring of {}".format(site), "bold"))
         last_email_time[site] = 0  # Initialize timestamp as 0
 
     while sites:
         try:
             for site in sites:
-                status = ping(site)
+                status,latency = ping(site)
                 if status == 200:
-                    print("\n" + site + " ... " + colorize("OK", "green")),
+                    print("({}) {} STATUS: {} ... {}".format(strftime("%a %b %d %Y %H:%M:%S"),
+                                        site,
+                                        colorize(status, "green"),latency
+                                        )
+                         )
                     sys.stdout.flush()
                 else:
-                    error_log(site, status)
+                    error_log(site, status, latency)
                     #send_alert(site, status)
-            sleep(DELAY)
+            #sleep(DELAY)
+            exit()
         # except requests.exceptions.ConnectionError:
         #     print(colorize("No Connection ({})".format(site), "red"))
         except KeyboardInterrupt:
@@ -128,7 +137,7 @@ def main():
             break
     else:
         print(colorize("No site(s) input to monitor!", "red"))
+        exit()
 
-
-if __name__ == '__main__':
-    main()
+#if __name__ == '__main__':
+main()
