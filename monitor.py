@@ -101,7 +101,8 @@ def check_services_health(site):
         latency = resp.elapsed
         latency_str = str(latency)
         latency_str_seconds = latency_str.split(":")
-        return resp.status_code, latency_str_seconds[2].replace("00.", "0.")
+        format_latency_str = latency_str_seconds[2].replace("00.", "0.")
+        return resp.status_code, format_latency_str
     except requests.exceptions.SSLError:
         pass
     except:
@@ -149,13 +150,20 @@ def service_monitoring():
         for site in sites:
             status,latency = check_services_health(site)
 
+            # Debugging 
             print("({}) {} STATUS: {} ... {}".format(strftime("%Y-%m-%d %H:%M:%S"),
                                 site,
-                                colorize(status, "green"),
+                                status,
                                 latency
                                 )
                  )
+            # Write Logfile
             service_monitoring_log(site, status, latency)
+            # Update Service with lastLatence, lastScan and lastStatus
+            # set_service_update()
+            # Insert Services_Events with moneve_URL, moneve_DateTime, moneve_StatusCode and moneve_Latency
+            # set_services_events()
+
             # sqlite_insert_with_param = """INSERT INTO Services
             #                  (mon_URL, mon_MAC, mon_LastStatus, mon_LastLatency, mon_LastScan, mon_Tags, mon_AlertEvents, mon_AlertDown) 
             #                  VALUES (?, ?, ?, ?, ?, ?, ?, ?);"""
