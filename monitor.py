@@ -269,9 +269,9 @@ def service_monitoring():
     print("... Flush previous scan results")
     flush_services_current_scan()
 
-    print("\nStart Services Monitoring")
+    print("Start Services Monitoring")
     with open('monitor.log', 'a') as monitor_logfile:
-        monitor_logfile.write("Start Services Monitoring\n\n| Timestamp | URL | StatusCode | ResponseTime |\n-----------------------------------------------\n") 
+        monitor_logfile.write("\nStart Services Monitoring\n\n| Timestamp | URL | StatusCode | ResponseTime |\n-----------------------------------------------\n") 
         monitor_logfile.close()
 
     for site in sites:
@@ -283,7 +283,7 @@ def service_monitoring():
             scantime = strftime("%Y-%m-%d %H:%M:%S")
 
             # Debugging 
-            # print("({}) {} STATUS: {} ... {}".format(strftime("%Y-%m-%d %H:%M:%S"),
+            # print("{} - {} STATUS: {} ResponseTime: {}".format(strftime("%Y-%m-%d %H:%M:%S"),
             #                     site,
             #                     status,
             #                     latency)
